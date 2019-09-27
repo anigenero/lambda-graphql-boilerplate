@@ -1,0 +1,68 @@
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  
+  StackSuffix:
+    Type: String
+
+Resources:
+  
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/task-api-${StackSuffix}
+      RetentionInDays: 7
+  
+  ServerlessApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub task-api-${StackSuffix}
+      StageName: prod
+      AccessLogSetting:
+        DestinationArn: !GetAtt [ApiLogGroup,Arn]
+      TracingEnabled: true
+  
+  GraphLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-graphql
+      Description: The GraphQL API lambda function
+      Runtime: nodejs10.x
+      Handler: graphql.handler
+      CodeUri: ../dist/
+      MemorySize: 512
+      Timeout: 30
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:*
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DetachNetworkInterface
+                - ec2:DeleteNetworkInterface
+              Resource: "*"
+      Environment:
+        Variables:
+          aws_region: !Ref AWS::Region
+          cognito_client_id:
+            Fn::ImportValue: !Sub task-auth-${StackSuffix}-cognitoWebClientId
+          cognito_user_pool_id:
+            Fn::ImportValue: !Sub task-auth-${StackSuffix}-cognitoUserPoolId
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ServerlessApi
+            Path: /graph
+            Method: post
+
+Outputs:
+  
+  ServerlessRestApi:
+    Export:
+      Name: !Sub ${AWS::StackName}-apiGatewayRestId
+    Value: !Sub '${ServerlessApi}.execute-api.${AWS::Region}.amazonaws.com'

@@ -1,0 +1,64 @@
+{
+  "name": "lambda-graphql-boilerplate",
+  "version": "1.0.0",
+  "description": "AWS Lambda GraphQL Boilerplate",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "webpack",
+    "generate:graphql": "gql-gen --config codegen.yml",
+    "generate:templates": "gulp build",
+    "lint": "tslint -p tsconfig.json -c tslint.json",
+    "sonar": "sonar-scanner",
+    "test": "jest --passWithNoTests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anigenero/lambda-graphql-boilerplate.git"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "graphql",
+    "apollo"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anigenero/lambda-graphql-boilerplate/issues"
+  },
+  "homepage": "https://github.com/anigenero/lambda-graphql-boilerplate#readme",
+  "devDependencies": {
+    "@babel/preset-env": "^7.6.2",
+    "@graphql-codegen/cli": "^1.7.0",
+    "@graphql-codegen/typescript": "^1.7.0",
+    "@graphql-codegen/typescript-resolvers": "^1.7.0",
+    "@types/bluebird": "^3.5.27",
+    "@types/jest": "^24.0.18",
+    "@types/lodash": "^4.14.140",
+    "@types/uuid": "^3.4.5",
+    "babel-loader": "^8.0.6",
+    "graphql-tag": "^2.10.1",
+    "jest": "^24.9.0",
+    "jest-cli": "^24.9.0",
+    "ts-loader": "^6.1.2",
+    "tslint": "^5.20.0",
+    "tslint-sonarts": "^1.9.0",
+    "typescript": "^3.6.3",
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "dependencies": {
+    "@log4js2/core": "^2.0.9",
+    "apollo-server-lambda": "^2.9.4",
+    "aws-cognito-graphql-directive": "^1.0.0-beta.1",
+    "aws-sdk": "^2.537.0",
+    "bluebird": "^3.5.5",
+    "core-js": "^3.2.1",
+    "graphql": "^14.5.8",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "moment-timezone": "^0.5.26",
+    "uuid": "^3.3.3"
+  }
+}

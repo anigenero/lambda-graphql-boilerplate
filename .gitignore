@@ -1,0 +1,11 @@
+.aws-sam/
+.cert/
+node_modules/
+dist/
+coverage/
+
+env.json
+sam.json
+package.yml
+
+*.log
