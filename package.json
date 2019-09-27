@@ -2,7 +2,6 @@
   "name": "lambda-graphql-boilerplate",
   "version": "1.0.0",
   "description": "AWS Lambda GraphQL Boilerplate",
-  "main": "dist/index.js",
   "scripts": {
     "build": "webpack",
     "generate:graphql": "gql-gen --config codegen.yml",
