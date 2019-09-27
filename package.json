@@ -6,10 +6,9 @@
   "scripts": {
     "build": "webpack",
     "generate:graphql": "gql-gen --config codegen.yml",
-    "generate:templates": "gulp build",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "sonar": "sonar-scanner",
-    "test": "jest --passWithNoTests"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -21,7 +20,11 @@
     "graphql",
     "apollo"
   ],
-  "author": "",
+  "author": {
+    "email": "robin@anigenero.com",
+    "name": "Robin Schultz",
+    "url": "https://github.com/anigenero"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/anigenero/lambda-graphql-boilerplate/issues"
