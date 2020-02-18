@@ -1,0 +1,203 @@
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+
+  EnableCors:
+    Description: Enable whether or not CORS is enabled for all
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - true
+      - false
+
+  ReportingEmail:
+    Type: String
+    Description: the email that will pick up
+    AllowedPattern: "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$"
+    ConstraintDescription: Must be a valid email
+
+  StackSuffix:
+    Type: String
+
+Conditions:
+  EnableCors: !Equals [!Ref EnableCors, "true"]
+  LinearDeploymentIsEnabled: !Equals [!Ref EnableLinearDeployment, "true"]
+
+Resources:
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/task-api-${StackSuffix}
+      RetentionInDays: 7
+
+  ServerlessApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub kazzcade-api-${StackSuffix}
+      StageName: prod
+      AccessLogSetting:
+        DestinationArn: !GetAtt [ApiAccessLogGroup,Arn]
+      TracingEnabled: true
+      Cors:
+        AllowOrigin: !If [EnableCors, !Sub "'*'", "'${SiteDomain}'"]
+        AllowMethods: "'OPTIONS,POST'"
+        AllowHeaders: "'acting,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Cognito-Identity-Id'"
+
+  # Web Application Firewall
+
+  ApiWebACL:
+    Type: AWS::WAFRegional::WebACL
+    Properties:
+      DefaultAction:
+        Type: ALLOW
+      MetricName: !Sub KazzcadeApi${StackSuffix}Acl
+      Name: !Sub Kazzcade (${StackSuffix}) Web ACL
+      Rules:
+        - Action:
+            Type: BLOCK
+          Priority: 1
+          RuleId: !Ref ApiXssRule
+
+  # Prevent cross-site scripting
+
+  ApiXssRule:
+    Type: AWS::WAFRegional::Rule
+    Properties:
+      MetricName: !Sub Kazzcade${StackSuffix}XssRule
+      Name: !Sub Kazzcade (${StackSuffix}) XSS Rule
+      Predicates:
+        - DataId: !Ref ApiDetectXss
+          Negated: false
+          Type: XssMatch
+
+  ApiDetectXss:
+    Type: AWS::WAFRegional::XssMatchSet
+    Properties:
+      Name: !Sub kazzcade-api-${StackSuffix}-waf-xss
+      XssMatchTuples:
+        - FieldToMatch:
+            Type: URI
+          TextTransformation: NONE
+        - FieldToMatch:
+            Type: BODY
+          TextTransformation: NONE
+
+  # Associate the web ACL to the API gateway
+
+  WebACLAssociation:
+    Type: AWS::WAFRegional::WebACLAssociation
+    DependsOn:
+      - ServerlessApi
+    Properties:
+      ResourceArn: !Sub
+        - 'arn:aws:apigateway:${AWS::Region}::/restapis/${apiId}/stages/${stage}'
+        - stage: !Ref ServerlessApiprodStage
+          apiId: !Ref ServerlessApi
+      WebACLId: !Ref ApiWebACL
+
+  GraphLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-graphql
+      Description: The GraphQL API lambda function
+      Runtime: nodejs10.x
+      Handler: graphql.handler
+      CodeUri: ./dist/
+      MemorySize: 512
+      Timeout: 30
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:*
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DetachNetworkInterface
+                - ec2:DeleteNetworkInterface
+              Resource: "*"
+      Environment:
+        Variables:
+          aws_region: !Ref AWS::Region
+          cognito_client_id:
+            Fn::ImportValue: !Sub task-${StackSuffix}-cognitoWebClientId
+          cognito_user_pool_id:
+            Fn::ImportValue: !Sub task-${StackSuffix}-cognitoUserPoolId
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ServerlessApi
+            Path: /graph
+            Method: post
+
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${AWS::StackName}-AlarmTopic
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref ReportingEmail
+
+  # CloudWatch Alarms
+
+  ErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref AlarmTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 3
+      Threshold: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GraphLambda
+      Statistic: Sum
+      TreatMissingData: missing
+      Namespace: AWS/Lambda
+      Period: 60
+      MetricName: Errors
+
+  P50LatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref AlarmTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 5
+      Threshold: 500
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GraphLambda
+      ExtendedStatistic: p50
+      TreatMissingData: missing
+      Namespace: AWS/Lambda
+      Period: 60
+      MetricName: Duration
+
+  P99LatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref AlarmTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 3
+      Threshold: 1000
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GraphLambda
+      ExtendedStatistic: p99
+      TreatMissingData: missing
+      Namespace: AWS/Lambda
+      Period: 60
+      MetricName: Duration
+
+Outputs:
+
+  ServerlessRestApi:
+    Export:
+      Name: !Sub ${AWS::StackName}-apiGatewayRestId
+    Value: !Sub '${ServerlessApi}.execute-api.${AWS::Region}.amazonaws.com'

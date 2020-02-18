@@ -1,6 +1,6 @@
-let _config: IConfig = null;
+let _config: Configuration = null;
 
-const _parseConfig = async (): Promise<IConfig> => ({
+const _parseConfig = (): Configuration => ({
 	awsRegion: process.env.aws_region,
 	cognito: {
 		awsRegion: process.env.aws_region,
@@ -9,19 +9,19 @@ const _parseConfig = async (): Promise<IConfig> => ({
 	}
 });
 
-const _getConfiguration = async (): Promise<IConfig> => {
+const _getConfiguration = (): Configuration => {
 
 	if (_config) {
 		return _config;
 	} else {
-		_config = await _parseConfig();
+		_config = _parseConfig();
 		return _config;
 	}
 
 };
 
-export const getAwsRegion = async () => (await _getConfiguration()).awsRegion;
+export const getAwsRegion = () => (_getConfiguration()).awsRegion;
 
-export const getCognitoUserRegion = async () => (await _getConfiguration()).cognito.awsRegion;
+export const getCognitoUserRegion = () => (_getConfiguration()).cognito.awsRegion;
 
-export const getCognitoUserPoolId = async () => (await _getConfiguration()).cognito.userPoolId;
+export const getCognitoUserPoolId = () => (_getConfiguration()).cognito.userPoolId;

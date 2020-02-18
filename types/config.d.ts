@@ -1,16 +1,14 @@
-declare interface ICognitoConfiguration {
+declare type CognitoConfiguration = {
 
 	awsRegion: string;
 	clientId: string;
 	userPoolId: string;
 
-}
+};
 
-declare interface IConfig {
+declare type Configuration = {
 
 	awsRegion: string;
-	cognito: ICognitoConfiguration;
+	cognito: CognitoConfiguration;
 
-}
-
-declare let config: IConfig;
+};

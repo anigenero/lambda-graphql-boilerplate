@@ -56,6 +56,7 @@ export type TaskInput = {
 };
 
 
+
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
@@ -113,6 +114,8 @@ export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
   info: GraphQLResolveInfo
 ) => Maybe<TTypes>;
 
+export type isTypeOfResolverFn<T = {}> = (obj: T, info: GraphQLResolveInfo) => boolean;
+
 export type NextResolverFn<T> = () => Promise<T>;
 
 export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs = {}> = (
@@ -149,7 +152,9 @@ export type ResolversParentTypes = {
   Date: Scalars['Date'],
 };
 
-export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = {   groups?: Maybe<Maybe<Array<Maybe<Scalars['String']>>>> }> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+export type AuthDirectiveArgs = {   groups?: Maybe<Array<Maybe<Scalars['String']>>> };
+
+export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date'
@@ -175,6 +180,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   complete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>,
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>,
+  __isTypeOf?: isTypeOfResolverFn<ParentType>,
 };
 
 export type Resolvers<ContextType = any> = {

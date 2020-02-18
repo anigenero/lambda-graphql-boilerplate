@@ -10,7 +10,7 @@ export const dateTimeScalar = new GraphQLScalarType({
 
 	serialize: (value: Date | moment.Moment | string) => {
 
-		if (value === null || value === undefined) {
+		if (value === null || typeof value === 'undefined') {
 			return null;
 		}
 
