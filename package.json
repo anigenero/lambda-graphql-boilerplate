@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@log4js2/core": "^2.0.9",
-    "apollo-server-lambda": "^2.10.1",
+    "apollo-server-lambda": "^2.14.2",
     "aws-cognito-graphql-directive": "^1.0.3",
     "aws-sdk": "^2.620.0",
     "bluebird": "^3.7.2",
