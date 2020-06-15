@@ -16,7 +16,7 @@ const resolvers: Resolvers<GraphQLContext> = {
 
 };
 
-export const getApolloServer = () =>
+export const getApolloServer = (): ApolloServer =>
 	new ApolloServer({
 		context: generateContext,
 		formatError: (error: GraphQLError): GraphQLFormattedError => ({
@@ -28,6 +28,6 @@ export const getApolloServer = () =>
 		typeDefs: merge(authTypeDefs, typeDefs),
 		resolvers,
 		schemaDirectives: {
-			auth: AuthDirective
+			auth: AuthDirective as any
 		}
 	});

@@ -1,3 +1,19 @@
+type CognitoConfiguration = {
+
+	awsRegion: string;
+	clientId: string;
+	userPoolId: string;
+
+};
+
+type Configuration = {
+
+	awsRegion: string;
+	cognito: CognitoConfiguration;
+
+};
+
+
 let _config: Configuration = null;
 
 const _parseConfig = (): Configuration => ({

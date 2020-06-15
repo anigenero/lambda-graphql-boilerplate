@@ -1,6 +1,6 @@
 {
   "env": {
-    "browser": true
+    "browser": false
   },
   "extends": [
     "plugin:@typescript-eslint/recommended",
@@ -17,7 +17,6 @@
   ],
   "plugins": [
     "@typescript-eslint",
-    "@typescript-eslint/tslint",
     "import",
     "prefer-arrow"
   ],
@@ -26,7 +25,6 @@
     "@typescript-eslint/array-type": "error",
     "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/ban-types": "error",
-    "@typescript-eslint/class-name-casing": "error",
     "@typescript-eslint/consistent-type-assertions": "error",
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
@@ -36,6 +34,7 @@
         "accessibility": "explicit"
       }
     ],
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/indent": [
       "off",
       4,
@@ -48,7 +47,6 @@
         }
       }
     ],
-    "@typescript-eslint/interface-name-prefix": "error",
     "@typescript-eslint/member-delimiter-style": [
       "error",
       {
@@ -69,6 +67,7 @@
     "@typescript-eslint/no-misused-new": "error",
     "@typescript-eslint/no-namespace": "off",
     "@typescript-eslint/no-parameter-properties": "off",
+    "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-use-before-define": "error",
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/prefer-for-of": "error",
